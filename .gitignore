@@ -74,3 +74,11 @@ jspm_packages/
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.ilk
+*.log
+*.tlog
+GPProject/x64/Debug/GPProject.ilk
+GPProject/x64/Debug/GPProject.tlog/link.write.1.tlog
+GPProject/x64/Debug/GPProject.tlog/link.read.1.tlog
+GPProject/x64/Debug/GPProject.tlog/CL.write.1.tlog
+GPProject/x64/Debug/GPProject.tlog/CL.read.1.tlog
