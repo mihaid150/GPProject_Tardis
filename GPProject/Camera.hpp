@@ -30,6 +30,9 @@ namespace gps {
         glm::vec3 cameraFrontDirection;
         glm::vec3 cameraRightDirection;
         glm::vec3 cameraUpDirection;
+        float yaw = -90.0f;
+        float pitch = 0.0f;
+        glm::vec3 worldUp;
     };
     
 }

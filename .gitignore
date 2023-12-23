@@ -1,5 +1,9 @@
 .vs/
 
+*.tlog
+*.log
+*.ilk
+
 # Compiled Object files
 *.slo
 *.lo
