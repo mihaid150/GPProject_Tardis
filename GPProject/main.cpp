@@ -105,8 +105,21 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
 }
 
+float lastX = 300, lastY = 400;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    //TODO
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    myCamera.rotate(yoffset, xoffset);
+    view = myCamera.getViewMatrix();
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 }
 
 void processMovement() {
