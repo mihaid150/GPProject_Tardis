@@ -204,7 +204,7 @@ void initOpenGLState() {
 
 void initModels() {
     teapot.LoadModel("models/teapot/teapot20segUT.obj");
-    dalek.LoadModel("models/dalek/imperial_dalek.obj");
+    dalek.LoadModel("models/dalek/Imperial_Dalek.obj");
 }
 
 void initShaders() {
