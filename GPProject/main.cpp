@@ -47,6 +47,7 @@ GLboolean pressedKeys[1024];
 
 // models
 gps::Model3D teapot;
+gps::Model3D dalek;
 GLfloat angle;
 
 // shaders
@@ -105,7 +106,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
 }
 
-float lastX = 300, lastY = 400;
+float lastX = 300, lastY = 50;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos;
@@ -181,7 +182,7 @@ void processMovement() {
 }
 
 void initOpenGLWindow() {
-    myWindow.Create(1024, 768, "OpenGL Project Core");
+    myWindow.Create(1024, 728, "OpenGL Project Core");
 }
 
 void setWindowCallbacks() {
@@ -203,6 +204,7 @@ void initOpenGLState() {
 
 void initModels() {
     teapot.LoadModel("models/teapot/teapot20segUT.obj");
+    dalek.LoadModel("models/dalek/imperial_dalek.obj");
 }
 
 void initShaders() {
@@ -252,7 +254,6 @@ void initUniforms() {
 void renderTeapot(gps::Shader shader) {
     // select active shader program
     shader.useShaderProgram();
-
     //send teapot model matrix data to shader
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -263,6 +264,26 @@ void renderTeapot(gps::Shader shader) {
     teapot.Draw(shader);
 }
 
+float dalekAngle = 0;
+
+void renderDalek(gps::Shader shader) {
+    shader.useShaderProgram();
+
+    // Reset and transform model matrix for dalek
+    glm::mat4 model = glm::mat4(1.0f);
+    if (pressedKeys[GLFW_KEY_UP]) {
+        dalekAngle += 0.02f;
+    }
+    if (pressedKeys[GLFW_KEY_DOWN]) {
+        dalekAngle -= 0.02f;
+    }
+    model = glm::rotate(model, dalekAngle, glm::vec3(1, 0, 0));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    // Draw dalek
+    dalek.Draw(shader);
+}
+
 void renderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -270,7 +291,8 @@ void renderScene() {
 
 	// render the teapot
 	renderTeapot(myBasicShader);
-
+    // Render the dalek
+    renderDalek(myBasicShader);
 }
 
 void cleanup() {
