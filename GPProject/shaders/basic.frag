@@ -1,5 +1,6 @@
 #version 410 core
 
+
 in vec3 fPosition;
 in vec3 fNormal;
 in vec2 fTexCoords;

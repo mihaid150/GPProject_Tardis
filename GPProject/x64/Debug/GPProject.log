@@ -1,19 +1,8 @@
-﻿  Camera.cpp
-  main.cpp
-  Mesh.cpp
-C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\Mesh.cpp(32,72): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
-  Model3D.cpp
-C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\Model3D.cpp(89,40): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=GLuint
-          ]
-C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\Model3D.cpp(97,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  Shader.cpp
-  stb_image.cpp
-  tiny_obj_loader.cpp
-  Window.cpp
-  Generating Code...
+﻿  main.cpp
+C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\main.cpp(111,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\main.cpp(112,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\main.cpp(114,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Mihai\UTCN\anul3\GP\GPProject\GPProject\main.cpp(115,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 glfw3.lib(window.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(window.obj)' or at ''; linking object as if no debug info
 glfw3.lib(input.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(input.obj)' or at ''; linking object as if no debug info
 glfw3.lib(context.obj) : warning LNK4099: PDB '' was not found with 'glfw3.lib(context.obj)' or at ''; linking object as if no debug info
