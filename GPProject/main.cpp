@@ -317,7 +317,6 @@ void renderSun(gps::Shader shader) {
     shader.useShaderProgram();
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(1, 0, 0));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     sun.Draw(shader);
 }
