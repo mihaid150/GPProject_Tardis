@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+#include "SkyBox.hpp"
+
 // window
 gps::Window myWindow;
 
@@ -48,10 +50,14 @@ GLboolean pressedKeys[1024];
 // models
 gps::Model3D teapot;
 gps::Model3D dalek;
+gps::Model3D sun;
 GLfloat angle;
 
 // shaders
 gps::Shader myBasicShader;
+
+gps::SkyBox mySkyBox;
+gps::Shader skyBoxShader;
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -106,8 +112,14 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     }
 }
 
-float lastX = 300, lastY = 50;
+bool firstMouse = true;
+float lastX = 300, lastY = 150;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos;
 
@@ -120,6 +132,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 
     myCamera.rotate(yoffset, xoffset);
     view = myCamera.getViewMatrix();
+    myBasicShader.useShaderProgram();
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 }
 
@@ -183,6 +196,7 @@ void processMovement() {
 
 void initOpenGLWindow() {
     myWindow.Create(1024, 728, "OpenGL Project Core");
+    glfwSetInputMode(myWindow.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void setWindowCallbacks() {
@@ -205,12 +219,15 @@ void initOpenGLState() {
 void initModels() {
     teapot.LoadModel("models/teapot/teapot20segUT.obj");
     dalek.LoadModel("models/dalek/Imperial_Dalek.obj");
+    sun.LoadModel("models/sun/sun.obj");
 }
 
 void initShaders() {
 	myBasicShader.loadShader(
         "shaders/basic.vert",
         "shaders/basic.frag");
+    skyBoxShader.loadShader("shaders/skyboxShader.vert", "shaders/skyboxShader.frag");
+    skyBoxShader.useShaderProgram();
 }
 
 void initUniforms() {
@@ -251,6 +268,18 @@ void initUniforms() {
 	glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
 }
 
+void initSkyBox() {
+    std::vector<const GLchar*> faces;
+    faces.push_back("skybox/starfield_rt.tga");
+    faces.push_back("skybox/starfield_lf.tga");
+    faces.push_back("skybox/starfield_up.tga");
+    faces.push_back("skybox/starfield_dn.tga");
+    faces.push_back("skybox/starfield_bk.tga");
+    faces.push_back("skybox/starfield_ft.tga");
+
+    mySkyBox.Load(faces);
+}
+
 void renderTeapot(gps::Shader shader) {
     // select active shader program
     shader.useShaderProgram();
@@ -284,16 +313,28 @@ void renderDalek(gps::Shader shader) {
     dalek.Draw(shader);
 }
 
+void renderSun(gps::Shader shader) {
+    shader.useShaderProgram();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(1, 0, 0));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    sun.Draw(shader);
+}
+
 void renderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//render the scene
 
 	// render the teapot
-	renderTeapot(myBasicShader);
+	//renderTeapot(myBasicShader);
     // Render the dalek
     renderDalek(myBasicShader);
+    renderSun(myBasicShader);
+    mySkyBox.Draw(skyBoxShader, view, projection);
 }
+
 
 void cleanup() {
     myWindow.Delete();
@@ -308,9 +349,10 @@ int main(int argc, const char * argv[]) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-
+    
     initOpenGLState();
 	initModels();
+    initSkyBox();
 	initShaders();
 	initUniforms();
     setWindowCallbacks();
