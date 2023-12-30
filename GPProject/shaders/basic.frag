@@ -12,18 +12,18 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat3 normalMatrix;
 //lighting
-uniform vec3 lightDir;
 uniform vec3 lightColor;
 // textures
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform vec3 sunPosition;
 
 //components
 vec3 ambient;
-float ambientStrength = 0.01f;
+float ambientStrength = 0.1f;
 vec3 diffuse;
 vec3 specular;
-float specularStrength = 0.8f;
+float specularStrength = 0.1f;
 
 void computeDirLight()
 {
@@ -32,7 +32,7 @@ void computeDirLight()
     vec3 normalEye = normalize(normalMatrix * fNormal);
 
     //normalize light direction
-    vec3 lightDirN = vec3(normalize(view * vec4(lightDir, 0.0f)));
+     vec3 lightDirN = normalize(vec3(view * vec4(sunPosition, 1.0f)) - fPosEye.xyz);
 
     //compute view direction (in eye coordinates, the viewer is situated at the origin
     vec3 viewDir = normalize(- fPosEye.xyz);
