@@ -58,10 +58,6 @@ gps::Shader myBasicShader;
 gps::SkyBox mySkyBox;
 gps::Shader skyBoxShader;
 
-GLfloat lightColorSun[] = { 1.0, 1.0, 1.0, 1.0 }; // white light
-GLfloat lightPositionSun[] = { 0.0, 10.0, 0.0, 1.0 }; // position of the sun
-
-
 GLenum glCheckError_(const char *file, int line)
 {
 	GLenum errorCode;
@@ -217,10 +213,6 @@ void initOpenGLState() {
 	glEnable(GL_CULL_FACE); // cull face
 	glCullFace(GL_BACK); // cull back face
 	glFrontFace(GL_CCW); // GL_CCW for counter clock-wise
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColorSun);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPositionSun);
 }
 
 void initModels() {

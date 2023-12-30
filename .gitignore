@@ -3,8 +3,10 @@
 *.tlog
 *.log
 *.ilk
-*.vcxproj
-*.filters
+
+GPProject/GPProject.vcxproj
+
+
 
 # Compiled Object files
 *.slo
@@ -83,3 +85,5 @@ GPProject/x64/Debug/GPProject.tlog/link.write.1.tlog
 GPProject/x64/Debug/GPProject.tlog/link.read.1.tlog
 GPProject/x64/Debug/GPProject.tlog/CL.write.1.tlog
 GPProject/x64/Debug/GPProject.tlog/CL.read.1.tlog
+GPProject/GPProject.vcxproj
+GPProject/GPProject.vcxproj.filters
