@@ -48,9 +48,8 @@ GLfloat cameraSpeed = 0.1f;
 GLboolean pressedKeys[1024];
 
 // models
-gps::Model3D teapot;
-gps::Model3D dalek;
 gps::Model3D sun;
+gps::Model3D dalek;
 GLfloat angle;
 
 // shaders
@@ -58,6 +57,10 @@ gps::Shader myBasicShader;
 
 gps::SkyBox mySkyBox;
 gps::Shader skyBoxShader;
+
+GLfloat lightColorSun[] = { 1.0, 1.0, 1.0, 1.0 }; // white light
+GLfloat lightPositionSun[] = { 0.0, 10.0, 0.0, 1.0 }; // position of the sun
+
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -214,12 +217,15 @@ void initOpenGLState() {
 	glEnable(GL_CULL_FACE); // cull face
 	glCullFace(GL_BACK); // cull back face
 	glFrontFace(GL_CCW); // GL_CCW for counter clock-wise
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColorSun);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPositionSun);
 }
 
 void initModels() {
-    teapot.LoadModel("models/teapot/teapot20segUT.obj");
-    dalek.LoadModel("models/dalek/Imperial_Dalek.obj");
     sun.LoadModel("models/sun/sun.obj");
+    dalek.LoadModel("models/dalek/Imperial_Dalek.obj");
 }
 
 void initShaders() {
@@ -280,33 +286,12 @@ void initSkyBox() {
     mySkyBox.Load(faces);
 }
 
-void renderTeapot(gps::Shader shader) {
-    // select active shader program
-    shader.useShaderProgram();
-    //send teapot model matrix data to shader
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    //send teapot normal matrix data to shader
-    glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-
-    // draw teapot
-    teapot.Draw(shader);
-}
-
-float dalekAngle = 0;
-
 void renderDalek(gps::Shader shader) {
     shader.useShaderProgram();
 
     // Reset and transform model matrix for dalek
     glm::mat4 model = glm::mat4(1.0f);
-    if (pressedKeys[GLFW_KEY_UP]) {
-        dalekAngle += 0.02f;
-    }
-    if (pressedKeys[GLFW_KEY_DOWN]) {
-        dalekAngle -= 0.02f;
-    }
-    model = glm::rotate(model, dalekAngle, glm::vec3(1, 0, 0));
+    
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     // Draw dalek
@@ -315,9 +300,10 @@ void renderDalek(gps::Shader shader) {
 
 void renderSun(gps::Shader shader) {
     shader.useShaderProgram();
-
     glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+   
     sun.Draw(shader);
 }
 
@@ -325,12 +311,8 @@ void renderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//render the scene
-
-	// render the teapot
-	//renderTeapot(myBasicShader);
-    // Render the dalek
-    renderDalek(myBasicShader);
     renderSun(myBasicShader);
+    renderDalek(myBasicShader);
     mySkyBox.Draw(skyBoxShader, view, projection);
 }
 
