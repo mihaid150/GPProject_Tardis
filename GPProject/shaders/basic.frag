@@ -11,12 +11,19 @@ out vec4 fColor;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat3 normalMatrix;
+
 //lighting
 uniform vec3 lightColor;
+uniform vec3 sunPosition;
+
 // textures
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
-uniform vec3 sunPosition;
+
+// Attenuation coefficients
+const float constant = 1.0;
+const float linear = 0.09;
+const float quadratic = 0.032;
 
 //components
 vec3 ambient;
@@ -37,16 +44,20 @@ void computeDirLight()
     //compute view direction (in eye coordinates, the viewer is situated at the origin
     vec3 viewDir = normalize(- fPosEye.xyz);
 
+    // Compute distance to light
+    float distance = length(sunPosition - fPosition);
+    float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+
     //compute ambient light
     ambient = ambientStrength * lightColor;
 
     //compute diffuse light
-    diffuse = max(dot(normalEye, lightDirN), 0.0f) * lightColor;
+    diffuse = max(dot(normalEye, lightDirN), 0.0f) * lightColor * attenuation;
 
     //compute specular light
     vec3 reflectDir = reflect(-lightDirN, normalEye);
     float specCoeff = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
-    specular = specularStrength * specCoeff * lightColor;
+    specular = specularStrength * specCoeff * lightColor * attenuation;
 }
 
 void main() 
