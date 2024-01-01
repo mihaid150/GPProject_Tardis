@@ -7,9 +7,9 @@
 #include <string>
 
 namespace gps {
-    
-    enum MOVE_DIRECTION {MOVE_FORWARD, MOVE_BACKWARD, MOVE_RIGHT, MOVE_LEFT};
-    
+
+    enum MOVE_DIRECTION { MOVE_FORWARD, MOVE_BACKWARD, MOVE_RIGHT, MOVE_LEFT };
+
     class Camera
     {
     public:
@@ -23,7 +23,7 @@ namespace gps {
         //yaw - camera rotation around the y axis
         //pitch - camera rotation around the x axis
         void rotate(float pitch, float yaw);
-        
+
     private:
         glm::vec3 cameraPosition;
         glm::vec3 cameraTarget;
@@ -34,7 +34,7 @@ namespace gps {
         float pitch = 0.0f;
         glm::vec3 worldUp;
     };
-    
+
 }
 
 #endif /* Camera_hpp */
