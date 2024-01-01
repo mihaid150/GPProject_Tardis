@@ -58,6 +58,8 @@ gps::Model3D jupiter;
 gps::Model3D saturn;
 gps::Model3D uranus;
 gps::Model3D neptune;
+gps::Model3D spaceship1;
+gps::Model3D spaceship2;
 
 glm::mat4 sunModel = glm::mat4(1.0f);
 glm::mat4 mercuryModel = glm::mat4(1.0f);
@@ -68,6 +70,8 @@ glm::mat4 jupiterModel = glm::mat4(1.0f);
 glm::mat4 saturnModel = glm::mat4(1.0f);
 glm::mat4 uranusModel = glm::mat4(1.0f);
 glm::mat4 neptuneModel = glm::mat4(1.0f);
+glm::mat4 spaceship1Model = glm::mat4(1.0f);
+glm::mat4 spaceship2Model = glm::mat4(1.0f);
 
 const float sunRotationSpeed = 1.0f;
 const float mercuryRotationSpeed = 256.0f;
@@ -78,6 +82,8 @@ const float jupiterRotationSpeed = 16.0f;
 const float saturnRotationSpeed = 8.0f;
 const float uranusRotationSpeed = 4.0f;
 const float neptuneRotationSpeed = 2.0f;
+const float spaceship1Speed = 1.0f;
+const float spaceship2Speed = 1.0f;
 
 GLfloat angle;
 GLfloat sunAngle = 0.0f;
@@ -89,10 +95,11 @@ GLfloat jupiterOrbitAngle = 0.0f;
 GLfloat saturnOrbitAngle = 0.0f;
 GLfloat uranusOrbitAngle = 0.0f;
 GLfloat neptuneOrbitAngle = 0.0f;
+GLfloat spaceship1Distance = 0.0f;
+GLfloat spaceship2Distance = 0.0f;
 
 // shaders
 gps::Shader myBasicShader;
-
 gps::SkyBox mySkyBox;
 gps::Shader skyBoxShader;
 
@@ -267,6 +274,8 @@ void initModels() {
     saturn.LoadModel("models/planets/bakedSaturn.obj");
     uranus.LoadModel("models/planets/uranus.obj");
     neptune.LoadModel("models/planets/neptune.obj");
+    spaceship1.LoadModel("models/spaceship1/spaceship1.obj");
+    spaceship2.LoadModel("models/spaceship2/spaceship2.obj");
 }
 
 void initShaders() {
@@ -510,6 +519,41 @@ void renderNeptune(gps::Shader shader, float deltaTime) {
     neptune.Draw(shader);
 }
 
+void renderSpaceShip1(gps::Shader shader, float deltaTime) {
+    shader.useShaderProgram();
+    spaceship1Distance += spaceship1Speed * deltaTime;
+
+    spaceship1Model = glm::mat4(1.0f);
+    
+    // spaceship1 is moving
+    spaceship1Model = glm::translate(spaceship1Model, glm::vec3(-spaceship1Distance, 0.0f, 0.0f));
+
+    // init position of spaceship1
+    spaceship1Model = glm::translate(spaceship1Model, glm::vec3(120.0f, 0.0f, 120.0f));
+
+    spaceship1Model = glm::scale(spaceship1Model, glm::vec3(2.0f, 2.0f, 2.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(spaceship1Model));
+    spaceship1.Draw(shader);
+}
+
+void renderSpaceShip2(gps::Shader shader, float deltaTime) {
+    shader.useShaderProgram();
+    spaceship2Distance += spaceship2Speed * deltaTime;
+
+    spaceship2Model = glm::mat4(1.0f);
+
+    // spaceship2 is moving
+    spaceship2Model = glm::translate(spaceship2Model, glm::vec3(0.0f, 0.0f, -spaceship2Distance));
+
+    // init position of spaceship2
+    spaceship2Model = glm::translate(spaceship2Model, glm::vec3(-120.0f, 0.0f, 120.0f));
+    spaceship2Model = glm::rotate(spaceship2Model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    spaceship2Model = glm::scale(spaceship2Model, glm::vec3(5.0f, 5.0f, 5.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(spaceship2Model));
+    spaceship2.Draw(shader);
+}
+
 void renderScene(float deltaTime) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -523,6 +567,8 @@ void renderScene(float deltaTime) {
     renderSaturn(myBasicShader, deltaTime);
     renderUranus(myBasicShader, deltaTime);
     renderNeptune(myBasicShader, deltaTime);
+    renderSpaceShip1(myBasicShader, deltaTime);
+    renderSpaceShip2(myBasicShader, deltaTime);
     mySkyBox.Draw(skyBoxShader, view, projection);
 }
 
