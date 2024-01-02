@@ -26,7 +26,6 @@ glm::mat4 projection;
 glm::mat3 normalMatrix;
 
 // light parameters
-glm::vec3 lightDir;
 glm::vec3 lightColor;
 
 // shader uniform locations
@@ -102,9 +101,42 @@ GLfloat spaceship2Distance = 0.0f;
 gps::Shader myBasicShader;
 gps::SkyBox mySkyBox;
 gps::Shader skyBoxShader;
+gps::Shader depthMapShader;
 
 glm::vec3 sunPosition;
 
+// depth map FBO and texture
+GLuint shadowMapFBO;
+GLuint depthMapTexture;
+const GLuint SHADOW_WIDTH = 1024;
+const GLuint SHADOW_HEIGHT = 1024;
+
+void initShadowMapping() { // initFBO
+    // Generate and bind the framebuffer
+    glGenFramebuffers(1, &shadowMapFBO);
+
+    // Create the depth texture
+    glGenTextures(1, &depthMapTexture);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT,
+        GL_FLOAT, NULL);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    // Attach the texture as the depth buffer of the FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 GLenum glCheckError_(const char* file, int line)
 {
@@ -284,6 +316,8 @@ void initShaders() {
         "shaders/basic.frag");
     skyBoxShader.loadShader("shaders/skyboxShader.vert", "shaders/skyboxShader.frag");
     skyBoxShader.useShaderProgram();
+    depthMapShader.loadShader("shaders/depthMapShader.vert", "shaders/depthMapShader.frag");
+    depthMapShader.useShaderProgram();
 }
 
 void initUniforms() {
@@ -314,13 +348,6 @@ void initUniforms() {
     GLint sunPosLoc = glGetUniformLocation(myBasicShader.shaderProgram, "sunPosition");
     glUniform3fv(sunPosLoc, 1, glm::value_ptr(sunPosition));
 
-
-    //set the light direction (direction towards the light)
-    lightDir = glm::vec3(0.0f, 1.0f, 0.0f);
-    lightDirLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightDir");
-    // send light dir to shader
-    glUniform3fv(lightDirLoc, 1, glm::value_ptr(lightDir));
-
     //set light color
     lightColor = glm::vec3(20.0f, 20.0f, 20.0f); //white light
     lightColorLoc = glGetUniformLocation(myBasicShader.shaderProgram, "lightColor");
@@ -338,6 +365,15 @@ void initSkyBox() {
     faces.push_back("skybox/starfield_ft.tga");
 
     mySkyBox.Load(faces);
+}
+
+glm::mat4 computeLightSpaceTrMatrix() {
+    // Adjust these parameters based on your scene's size and the light's position
+    const GLfloat near_plane = 1.0f, far_plane = 7.5f;
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightView = glm::lookAt(sunPosition, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 lightSpaceTrMatrix = lightProjection * lightView;
+    return lightSpaceTrMatrix;
 }
 
 void renderSun(gps::Shader shader, float deltaTime) {
@@ -554,8 +590,49 @@ void renderSpaceShip2(gps::Shader shader, float deltaTime) {
     spaceship2.Draw(shader);
 }
 
+void renderToShadowMap() {
+    // Set the viewport to the size of the depth map
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+
+    // Bind the framebuffer for the shadow map
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // Use the shader for rendering the depth map
+    depthMapShader.useShaderProgram();
+
+    // Calculate and set the light space transformation matrix
+    glm::mat4 lightSpaceMatrix = computeLightSpaceTrMatrix();
+    glUniformMatrix4fv(glGetUniformLocation(depthMapShader.shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+    // Render the scene (or parts of it) from the light's perspective
+    renderSun(depthMapShader, 0.0f); // Similarly render other objects
+    renderMercury(depthMapShader, 0.0f);
+    renderVenus(depthMapShader, 0.0f);
+    renderEarth(depthMapShader, 0.0f);
+    renderMars(depthMapShader, 0.0f);
+    renderJupiter(depthMapShader, 0.0f);
+
+    // Unbind the framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Restore the original viewport size
+    glViewport(0, 0, myWindow.getWindowDimensions().width, myWindow.getWindowDimensions().height);
+}
+
+
 void renderScene(float deltaTime) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    renderToShadowMap();
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+    glUniform1i(glGetUniformLocation(myBasicShader.shaderProgram, "shadowMap"), 3);
+
+    glUniformMatrix4fv(glGetUniformLocation(myBasicShader.shaderProgram, "lightSpaceTrMatrix"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(computeLightSpaceTrMatrix()));
 
     //render the scene
     renderSun(myBasicShader, deltaTime);
@@ -595,6 +672,7 @@ int main(int argc, const char* argv[]) {
     initSkyBox();
     initShaders();
     initUniforms();
+    initShadowMapping();
     setWindowCallbacks();
 
     glCheckError();
@@ -609,6 +687,7 @@ int main(int argc, const char* argv[]) {
         lastTime = currentTime;
 
         processMovement();
+        renderToShadowMap();
         renderScene(deltaTime);
         glfwPollEvents();
         glfwSwapBuffers(myWindow.getWindow());
